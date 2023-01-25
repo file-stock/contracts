@@ -1,18 +1,25 @@
+import { Contract } from 'ethers';
+import { providers, Wallet } from 'ethers';
 import { ethers } from "hardhat";
+import { FileStock } from "../typechain-types";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  const provider = new providers.JsonRpcProvider(`https://testnet.hyperspace.io/`);
+  const privateKey : string|any = process.env.PRIVATE_KEY;
+  let fileStock : FileStock;
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  // Load the private key of the deployer's wallet
+  const wallet = new Wallet(privateKey, provider);
+  // console.log(wallet)
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  // const fileStockFactory = await ethers.getContractFactory("FileStock");
+  // fileStock = await fileStockFactory.deploy(provider) as FileStock; // Hyperspace test net address
+  // fileStock.deployed()
+  // console.log(`FileStock contract was deployed at address: ${fileStock.address}`);
 
-  await lock.deployed();
-
-  console.log("Lock with 1 ETH deployed to:", lock.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -21,3 +28,7 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+
+
+
