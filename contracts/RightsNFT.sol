@@ -6,6 +6,8 @@ import "./FileStock.sol";
 
 contract RightsNFT is ERC1155 {
     FileStock public filestock;
+    address fileStockAddress;
+    address owner;
 
     struct Data {
         string cid;
@@ -17,8 +19,18 @@ contract RightsNFT is ERC1155 {
     mapping(uint256 => Data) public rightsNFT;
     uint256 public rightsNFTCount;
 
-    constructor(FileStock _filestock) ERC1155("") {
-        filestock = _filestock;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the contract owner can call this function");
+        _;
+    }
+
+    constructor() ERC1155("") {
+        owner = msg.sender;
+    }
+
+    function setFileStockAddress(address _fileStockAddress) public onlyOwner {
+        fileStockAddress = _fileStockAddress;
+        filestock = FileStock(fileStockAddress);
     }
 
     function mint(uint256 id, address buyer) external {

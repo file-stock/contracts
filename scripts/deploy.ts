@@ -7,18 +7,22 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-  const provider = new providers.JsonRpcProvider(`https://testnet.hyperspace.io/`);
-  const privateKey : string|any = process.env.PRIVATE_KEY;
-  let fileStock : FileStock;
 
-  // Load the private key of the deployer's wallet
-  const wallet = new Wallet(privateKey, provider);
-  // console.log(wallet)
+  const fileStockFactory = await ethers.getContractFactory("FileStock");
+  const fileStockContract = await fileStockFactory.deploy() as FileStock;
+  await fileStockContract.deployed();
 
-  // const fileStockFactory = await ethers.getContractFactory("FileStock");
-  // fileStock = await fileStockFactory.deploy(provider) as FileStock; // Hyperspace test net address
-  // fileStock.deployed()
-  // console.log(`FileStock contract was deployed at address: ${fileStock.address}`);
+  const accounts = await ethers.getSigners();
+  
+  const rightsId = await fileStockContract.connect(accounts[0]).storeFile("06b3dfaec148fb1bb2b" , 100);
+  console.log(rightsId);
+  // const balanceBNBefore = await accounts[0].getBalance();
+  // const balanceBefore = await ethers.utils.formatEther(balanceBNBefore);
+
+  // await fileStockContract.connect(accounts[0]).buyFile(rightsId);
+  // const balanceBNAfter = await accounts[0].getBalance();
+  // const balanceAfter = await ethers.utils.formatEther(balanceBNAfter);
+  
 
 }
 
