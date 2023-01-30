@@ -1,29 +1,30 @@
-import { Contract } from 'ethers';
-import { providers, Wallet } from 'ethers';
+import { Contract } from "ethers";
+import { providers, Wallet } from "ethers";
 import { ethers } from "hardhat";
-import { FileStock } from "../typechain-types";
-import * as dotenv from "dotenv";
-
-dotenv.config();
+import { FileStock, CreatorNFT, RightsNFT } from "../typechain-types";
 
 async function main() {
+  const creatorNFTFactory = await ethers.getContractFactory("CreatorNFT");
+  const creatorNFTContract = (await creatorNFTFactory.deploy()) as CreatorNFT;
+  await creatorNFTContract.deployed();
+
+  const rightsNFTFactory = await ethers.getContractFactory("RightsNFT");
+  const rightsNFTContract = (await rightsNFTFactory.deploy()) as RightsNFT;
+  await rightsNFTContract.deployed();
 
   const fileStockFactory = await ethers.getContractFactory("FileStock");
-  const fileStockContract = await fileStockFactory.deploy() as FileStock;
-  await fileStockContract.deployed();
+  const filContract = (await fileStockFactory.deploy(
+    creatorNFTContract.address,
+    rightsNFTContract.address
+  )) as FileStock;
+  await filContract.deployed();
 
-  const accounts = await ethers.getSigners();
-  
-  const rightsId = await fileStockContract.connect(accounts[0]).storeFile("06b3dfaec148fb1bb2b" , 100);
-  console.log(rightsId);
-  // const balanceBNBefore = await accounts[0].getBalance();
-  // const balanceBefore = await ethers.utils.formatEther(balanceBNBefore);
+  await creatorNFTContract.setFileStockAddress(filContract.address);
+  await rightsNFTContract.setFileStockAddress(filContract.address);
 
-  // await fileStockContract.connect(accounts[0]).buyFile(rightsId);
-  // const balanceBNAfter = await accounts[0].getBalance();
-  // const balanceAfter = await ethers.utils.formatEther(balanceBNAfter);
-  
-
+  console.log("CreatorNFT address:", creatorNFTContract.address);
+  console.log("RightsNFT address:", rightsNFTContract.address);
+  console.log("FileStock address:", filContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -32,7 +33,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
-
-
-

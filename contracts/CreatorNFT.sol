@@ -6,13 +6,15 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "./FileStock.sol";
 
 contract CreatorNFT is ERC721Enumerable {
-
     FileStock public filestock;
     address fileStockAddress;
     address owner;
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can call this function");
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
         _;
     }
 
@@ -25,10 +27,10 @@ contract CreatorNFT is ERC721Enumerable {
         filestock = FileStock(fileStockAddress);
     }
 
-    function mint() external returns (uint256) {
+    function mint(address creator) external returns (uint256) {
         require(msg.sender == address(filestock), "only filestock can mint");
         uint256 tokenId = totalSupply() + 1;
-        _safeMint(msg.sender, tokenId);
+        _safeMint(creator, tokenId);
         return tokenId;
     }
 }

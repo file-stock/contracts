@@ -4,10 +4,8 @@ pragma solidity 0.8.17;
 import "./CreatorNFT.sol";
 import "./RightsNFT.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "hardhat/console.sol";
 
-contract FileStock is ERC721Enumerable, ERC721Holder{
+contract FileStock is ERC721Enumerable {
     CreatorNFT public creatorNFT;
     RightsNFT public rightsNFT;
     address payable owner;
@@ -26,20 +24,29 @@ contract FileStock is ERC721Enumerable, ERC721Holder{
     event StoreFile(address indexed creator, uint256 price, uint256 rightsId);
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can call this function");
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
         _;
     }
 
-    constructor(address _creatorNFTAddress, address _rightNFTAddress) ERC721("FileStock", "FS"){
+    constructor(address _creatorNFTAddress, address _rightNFTAddress)
+        ERC721("FileStock", "FS")
+    {
         creatorNFT = CreatorNFT(_creatorNFTAddress);
         rightsNFT = RightsNFT(_rightNFTAddress);
         owner = payable(msg.sender);
     }
 
-    function storeFile(string calldata cid, uint256 _price, uint256[] memory tags) external {
-        require(_price >= 1 && _price <= 1000);
+    function storeFile(
+        string calldata cid,
+        uint256 _price,
+        uint256[] memory tags
+    ) external {
+        require(_price >= 0.1 ether && _price <= 1000 ether, "wrong price");
         // mint nft
-        uint256 tokenId = creatorNFT.mint();
+        uint256 tokenId = creatorNFT.mint(msg.sender);
         // create rightsNFT
         uint256 rightsId = rightsNFT.addRightsNFT(cid, msg.sender, tokenId);
         fileCount++;
@@ -49,14 +56,16 @@ contract FileStock is ERC721Enumerable, ERC721Holder{
     }
 
     function buyFile(uint256 id) external payable {
-        console.log("why not here");
         require(id > 0 && id <= fileCount, "invalid id");
         //payment
-        require(msg.value == files[id].price, "you must pay the exact price of the image");
-        uint payment = msg.value;
+        require(
+            msg.value == files[id].price,
+            "you must pay the exact price of the image"
+        );
+        uint256 payment = msg.value;
         address payable recipient = payable(files[id].creator);
-        recipient.transfer(payment * 99 / 100);
-        owner.transfer(payment * 1 / 100);
+        recipient.transfer((payment * 99) / 100);
+        owner.transfer((payment * 1) / 100);
         // mint rightsNFT
         rightsNFT.mint(id, msg.sender);
     }
