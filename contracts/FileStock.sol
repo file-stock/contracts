@@ -23,14 +23,6 @@ contract FileStock is ERC721Enumerable {
 
     event StoreFile(address indexed creator, uint256 price, uint256 rightsId);
 
-    modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "Only the contract owner can call this function"
-        );
-        _;
-    }
-
     constructor(address _creatorNFTAddress, address _rightNFTAddress)
         ERC721("FileStock", "FS")
     {
