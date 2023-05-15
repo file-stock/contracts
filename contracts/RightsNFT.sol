@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./FileStock.sol";
@@ -20,7 +20,10 @@ contract RightsNFT is ERC1155 {
     uint256 public rightsNFTCount;
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can call this function");
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
         _;
     }
 
