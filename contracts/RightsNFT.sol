@@ -2,9 +2,10 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./FileStock.sol";
 
-contract RightsNFT is ERC1155 {
+contract RightsNFT is ERC1155, Ownable {
     FileStock public filestock;
     address fileStockAddress;
     address owner;
@@ -19,17 +20,7 @@ contract RightsNFT is ERC1155 {
     mapping(uint256 => Data) public rightsNFT;
     uint256 public rightsNFTCount;
 
-    modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "Only the contract owner can call this function"
-        );
-        _;
-    }
-
-    constructor() ERC1155("") {
-        owner = msg.sender;
-    }
+    constructor() ERC1155("") {}
 
     function setFileStockAddress(address _fileStockAddress) public onlyOwner {
         fileStockAddress = _fileStockAddress;

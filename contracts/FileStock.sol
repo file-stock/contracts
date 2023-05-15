@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 contract FileStock is ERC721Enumerable {
     CreatorNFT public creatorNFT;
     RightsNFT public rightsNFT;
-    address payable owner;
 
     struct File {
         string watermarkedCid;
@@ -27,21 +26,12 @@ contract FileStock is ERC721Enumerable {
     event FinalizeUpload(address indexed creator, uint256 tokenId);
     event BuyFile(address indexed buyer, uint256 tokenId);
 
-    modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "Only the contract owner can call this function"
-        );
-        _;
-    }
-
     constructor(
         address _creatorNFTAddress,
         address _rightNFTAddress
     ) ERC721("FileStock", "FS") {
         creatorNFT = CreatorNFT(_creatorNFTAddress);
         rightsNFT = RightsNFT(_rightNFTAddress);
-        owner = payable(msg.sender);
     }
 
     function startUpload(
@@ -88,8 +78,7 @@ contract FileStock is ERC721Enumerable {
         require(!files[id].finalized, "file already sold");
         uint256 payment = msg.value;
         address payable recipient = payable(files[id].creator);
-        recipient.transfer((payment * 99) / 100);
-        owner.transfer((payment * 1) / 100);
+        recipient.transfer(payment);
         // mint rightsNFT
         rightsNFT.mint(id, msg.sender);
         emit BuyFile(msg.sender, id);
