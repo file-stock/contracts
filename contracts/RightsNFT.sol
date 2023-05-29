@@ -8,7 +8,6 @@ import "./FileStock.sol";
 contract RightsNFT is ERC1155, Ownable {
     FileStock public filestock;
     address fileStockAddress;
-    address owner;
 
     struct Data {
         string cid;
