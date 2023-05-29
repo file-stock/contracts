@@ -92,7 +92,6 @@ contract FileStock is ERC721Enumerable {
     function getAllFiles() external view returns (File[] memory) {
         File[] memory allFiles = new File[](fileCount);
         for (uint256 i = 0; i < fileCount; i++) {
-            if (files[i + 1].finalized) continue;
             allFiles[i] = files[i + 1];
         }
         return allFiles;
