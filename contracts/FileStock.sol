@@ -75,7 +75,7 @@ contract FileStock is ERC721Enumerable {
             msg.value == files[id].price,
             "you must pay the exact price of the image"
         );
-        require(!files[id].finalized, "file already sold");
+        require(files[id].finalized, "upload not finalized");
         uint256 payment = msg.value;
         address payable recipient = payable(files[id].creator);
         recipient.transfer(payment);
