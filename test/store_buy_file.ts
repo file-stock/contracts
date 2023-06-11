@@ -52,19 +52,25 @@ describe("Store and buy file", function () {
     );
   });
 
-  it("Should retrieve the file with specific id", async() => {
+  it("Should retrieve the file with specific id", async () => {
     const priceBN = ethers.utils.parseEther("100");
-    const rightsID = await filContract.connect(accounts[0]).storeFile("cidValue" , priceBN, tags);
+    const rightsID = await filContract
+      .connect(accounts[0])
+      .storeFile("cidValue", priceBN, tags);
     const file = await filContract.connect(accounts[0]).getFile(1);
     expect(file.watermarkedCid).to.equal("cidValue");
     expect(Number(ethers.utils.formatEther(file.price))).to.equal(100);
   });
 
-  it("Should retrieve all files", async() => {
+  it("Should retrieve all files", async () => {
     const priceBNFirst = ethers.utils.parseEther("100");
     const priceBNSecond = ethers.utils.parseEther("200");
-    await filContract.connect(accounts[0]).storeFile("firstCid" , priceBNFirst, tags);
-    await filContract.connect(accounts[0]).storeFile("secondCid" , priceBNSecond, tags);
+    await filContract
+      .connect(accounts[0])
+      .storeFile("firstCid", priceBNFirst, tags);
+    await filContract
+      .connect(accounts[0])
+      .storeFile("secondCid", priceBNSecond, tags);
     const filesArray = await filContract.connect(accounts[0]).getAllFiles();
     expect(filesArray.length).to.equal(2);
     expect(filesArray[1].watermarkedCid).to.equal("secondCid");

@@ -14,8 +14,8 @@ const config: HardhatUserConfig = {
     //   // gas: 12000000,
     //   // allowUnlimitedContractSize: true,
     // },
-    hyperspace: {
-      url: process.env.HYPERSPACE_URL || "",
+    calibration: {
+      url: process.env.CALIBRATION_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
