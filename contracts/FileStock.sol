@@ -6,7 +6,7 @@ import "./RightsNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract FileStock is ERC721Enumerable, Ownable {
+contract FileStock is Ownable {
     CreatorNFT public creatorNFT;
     RightsNFT public rightsNFT;
 
@@ -24,16 +24,12 @@ contract FileStock is ERC721Enumerable, Ownable {
     uint256 public fileCount;
     uint256 public minPrice = 0.1 ether;
     uint256 public maxPrice = 1000 ether;
-    mapping(address => uint256) public creatorPayments;
 
     event StartUpload(address indexed creator, uint256 price, uint256 tokenId);
     event FinalizeUpload(address indexed creator, uint256 tokenId);
     event BuyFile(address indexed buyer, uint256 tokenId);
 
-    constructor(
-        address _creatorNFTAddress,
-        address _rightNFTAddress
-    ) ERC721("FileStock", "FS") {
+    constructor(address _creatorNFTAddress, address _rightNFTAddress) {
         creatorNFT = CreatorNFT(_creatorNFTAddress);
         rightsNFT = RightsNFT(_rightNFTAddress);
     }
@@ -81,7 +77,7 @@ contract FileStock is ERC721Enumerable, Ownable {
         );
         require(files[id].finalized, "upload not finalized");
         uint256 payment = msg.value;
-        address tokenOwner = ownerOf(id);
+        address tokenOwner = creatorNFT.ownerOf(id);
         address payable recipient = payable(tokenOwner);
         recipient.transfer(payment);
         // mint rightsNFT
@@ -91,9 +87,10 @@ contract FileStock is ERC721Enumerable, Ownable {
 
     function buyBatch(uint256[] memory ids) external payable {
         uint256 totalPrice;
+        address payable[] memory recipients = new address payable[](ids.length);
+        uint256[] memory creatorPayments = new uint256[](ids.length);
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            require(ids[i] > 0 && ids[i] <= fileCount, "invalid id");
             require(id > 0 && id <= fileCount, "invalid id");
             //payment
             totalPrice += files[id].price;
@@ -105,19 +102,18 @@ contract FileStock is ERC721Enumerable, Ownable {
             emit BuyFile(msg.sender, id);
 
             //updates revenues for every creator
-            creatorPayments[ownerOf(id)] += files[id].price;
+            address creator = creatorNFT.ownerOf(id);
+            recipients[i] = payable(creator);
+            creatorPayments[i] = files[i].price;
         }
         require(
             msg.value == totalPrice,
-            "you must pay the exact price of the image"
+            "you must pay the exact price of the images"
         );
 
         // Distribute payments among creators
         for (uint256 i = 0; i < ids.length; i++) {
-            address payable recipient = payable(ownerOf(ids[i]));
-            uint256 creatorPayment = creatorPayments[recipient];
-            recipient.transfer(creatorPayment);
-            creatorPayments[recipient] = 0;
+            recipients[i].transfer(creatorPayments[i]);
         }
     }
 
@@ -135,7 +131,10 @@ contract FileStock is ERC721Enumerable, Ownable {
     }
 
     function deleteFile(uint256 id) external {
-        require(_isApprovedOrOwner(msg.sender, id), "Not approved or owner");
+        require(
+            creatorNFT.isApprovedOrOwner(msg.sender, id),
+            "Not approved or owner"
+        );
         //the nft should be burnt
         delete files[id];
     }

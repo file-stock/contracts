@@ -23,4 +23,11 @@ contract CreatorNFT is ERC721Enumerable, Ownable {
         _safeMint(creator, tokenId);
         return tokenId;
     }
+
+    function isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) public view returns (bool) {
+        return _isApprovedOrOwner(spender, tokenId);
+    }
 }
