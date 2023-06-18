@@ -76,10 +76,9 @@ contract FileStock is Ownable {
             "you must pay the exact price of the image"
         );
         require(files[id].finalized, "upload not finalized");
-        uint256 payment = msg.value;
-        address tokenOwner = creatorNFT.ownerOf(id);
-        address payable recipient = payable(tokenOwner);
-        recipient.transfer(payment);
+        address rightsOwner = creatorNFT.ownerOf(id);
+        (bool success, ) = rightsOwner.call{value: msg.value}("");
+        require(success, "Transfer failed.");
         // mint rightsNFT
         rightsNFT.mint(id, msg.sender);
         emit BuyFile(msg.sender, id);
@@ -87,8 +86,6 @@ contract FileStock is Ownable {
 
     function buyBatch(uint256[] memory ids) external payable {
         uint256 totalPrice;
-        address payable[] memory recipients = new address payable[](ids.length);
-        uint256[] memory creatorPayments = new uint256[](ids.length);
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
             require(id > 0 && id <= fileCount, "invalid id");
@@ -101,20 +98,14 @@ contract FileStock is Ownable {
             rightsNFT.mint(id, msg.sender);
             emit BuyFile(msg.sender, id);
 
-            //updates revenues for every creator
-            address creator = creatorNFT.ownerOf(id);
-            recipients[i] = payable(creator);
-            creatorPayments[i] = files[i].price;
+            address rightsOwner = creatorNFT.ownerOf(id);
+            (bool success, ) = rightsOwner.call{value: files[id].price}("");
+            require(success, "Transfer failed.");
         }
         require(
             msg.value == totalPrice,
             "you must pay the exact price of the images"
         );
-
-        // Distribute payments among creators
-        for (uint256 i = 0; i < ids.length; i++) {
-            recipients[i].transfer(creatorPayments[i]);
-        }
     }
 
     function getFile(uint256 id) external view returns (File memory) {
